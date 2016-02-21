@@ -1,0 +1,213 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ACKNOWLEDGE	modbus.h	139;"	d
+ADDRESS_END	modbus.h	163;"	d
+ADDRESS_START	modbus.h	162;"	d
+ARCH	Makefile	/^ARCH=ARM$/;"	m
+BOOL	modbus.h	/^typedef bool  BOOL;$/;"	t
+BYTE	modbus.h	/^typedef unsigned char  BYTE;$/;"	t
+CFLAG	Makefile	/^CFLAG:=-DMEMWATCH -DMW_STDIO$/;"	m
+CHECKSUM_LENGTH_RTU	modbus.h	60;"	d
+CHECKSUM_LENGTH_TCP	modbus.h	61;"	d
+CONNECTION_CLOSED	modbus.h	155;"	d
+COUNTS	main.cpp	/^static int COUNTS = 1;$/;"	v	file:
+CROSS	Makefile	/^CROSS=arm-linux-$/;"	m
+DATA_TYPE_INT16	modbus.h	168;"	d
+DATA_TYPE_INT32	modbus.h	170;"	d
+DATA_TYPE_INT64	modbus.h	172;"	d
+DATA_TYPE_INT8	modbus.h	166;"	d
+DATA_TYPE_UNINT16	modbus.h	169;"	d
+DATA_TYPE_UNINT32	modbus.h	171;"	d
+DATA_TYPE_UNINT64	modbus.h	173;"	d
+DATA_TYPE_UNINT8	modbus.h	167;"	d
+DEBUG	modbus.cpp	67;"	d	file:
+DOUBLE	modbus.h	46;"	d
+DWORD	modbus.h	/^typedef unsigned long  DWORD;$/;"	t
+EXCEPTION_RESPONSE_LENGTH_RTU	modbus.h	83;"	d
+FALSE	modbus.h	103;"	d
+FC_FORCE_MULTIPLE_COILS	modbus.h	127;"	d
+FC_FORCE_SINGLE_COIL	modbus.h	124;"	d
+FC_PRESET_MULTIPLE_REGISTERS	modbus.h	128;"	d
+FC_PRESET_SINGLE_REGISTER	modbus.h	125;"	d
+FC_READ_COIL_STATUS	modbus.h	120;"	d
+FC_READ_EXCEPTION_STATUS	modbus.h	126;"	d
+FC_READ_HOLDING_REGISTERS	modbus.h	122;"	d
+FC_READ_INPUT_REGISTERS	modbus.h	123;"	d
+FC_READ_INPUT_STATUS	modbus.h	121;"	d
+FC_READ_ORT900_SOE	modbus.h	131;"	d
+FC_REPORT_SLAVE_ID	modbus.h	129;"	d
+FLOAT	modbus.h	45;"	d
+FLUSH_OR_CONNECT_ON_ERROR	modbus.h	/^typedef enum { FLUSH_OR_CONNECT_ON_ERROR, NOP_ON_ERROR } error_handling_t;$/;"	e	enum:__anon2
+GATEWAY_PROBLEM_PATH	modbus.h	144;"	d
+GATEWAY_PROBLEM_TARGET	modbus.h	145;"	d
+HEADER_LENGTH_RTU	modbus.h	52;"	d
+HEADER_LENGTH_TCP	modbus.h	56;"	d
+ILLEGAL_DATA_ADDRESS	modbus.h	135;"	d
+ILLEGAL_DATA_VALUE	modbus.h	136;"	d
+ILLEGAL_FUNCTION	modbus.h	134;"	d
+INT16	modbus.h	39;"	d
+INT32	modbus.h	41;"	d
+INT64	modbus.h	43;"	d
+INT8	modbus.h	37;"	d
+INVALID_CRC	modbus.h	149;"	d
+INVALID_DATA	modbus.h	148;"	d
+INVALID_EXCEPTION_CODE	modbus.h	150;"	d
+IPATH	Makefile	/^IPATH:=-I$(OTHERSLIBPWD)\/sqlite-3.7.3\/output\/arm\/include$/;"	m
+IPATH	Makefile	/^IPATH:=-I$(OTHERSLIBPWD)\/sqlite-3.7.3\/output\/ubuntu\/include$/;"	m
+LDFLAG	Makefile	/^LDFLAG:=-static$/;"	m
+LPATH	Makefile	/^LPATH:=-L$(OTHERSLIBPWD)\/sqlite-3.7.3\/output\/arm\/lib$/;"	m
+LPATH	Makefile	/^LPATH:=-L$(OTHERSLIBPWD)\/sqlite-3.7.3\/output\/ubuntu\/lib$/;"	m
+MAX_ADU_LENGTH_RTU	modbus.h	77;"	d
+MAX_ADU_LENGTH_TCP	modbus.h	78;"	d
+MAX_MESSAGE_LENGTH	modbus.h	81;"	d
+MAX_PDU_LENGTH	modbus.h	76;"	d
+MAX_REGISTERS	modbus.h	93;"	d
+MAX_STATUS	modbus.h	88;"	d
+MB_EXCEPTION	modbus.h	156;"	d
+MEMORY_PARITY_ERROR	modbus.h	143;"	d
+MIN_QUERY_LENGTH	modbus.h	70;"	d
+MODBUS_BROADCAST_ADDRESS	modbus.h	49;"	d
+MODBUS_TCP_DEFAULT_PORT	modbus.h	48;"	d
+MSG_LENGTH_UNDEFINED	modbus.h	159;"	d
+NB_TAB_ERROR_MSG	modbus.cpp	/^static const uint8_t NB_TAB_ERROR_MSG = 12;$/;"	v	file:
+NEGATIVE_ACKNOWLEDGE	modbus.h	142;"	d
+NOP_ON_ERROR	modbus.h	/^typedef enum { FLUSH_OR_CONNECT_ON_ERROR, NOP_ON_ERROR } error_handling_t;$/;"	e	enum:__anon2
+OFF	modbus.h	111;"	d
+ON	modbus.h	115;"	d
+OTHERSLIBPWD	Makefile	/^OTHERSLIBPWD=\/home\/usrc$/;"	m
+PRESET_QUERY_LENGTH_RTU	modbus.h	53;"	d
+PRESET_QUERY_LENGTH_TCP	modbus.h	57;"	d
+PRESET_RESPONSE_LENGTH_RTU	modbus.h	54;"	d
+PRESET_RESPONSE_LENGTH_TCP	modbus.h	58;"	d
+REPORT_SLAVE_ID_LENGTH	modbus.h	95;"	d
+RTU	modbus.h	/^    RTU = 0, TCP$/;"	e	enum:__anon1
+SELECT_FAILURE	modbus.h	153;"	d
+SELECT_TIMEOUT	modbus.h	152;"	d
+SERVER_BUSY	modbus.h	141;"	d
+SERVER_FAILURE	modbus.h	138;"	d
+SLAVE	main.cpp	15;"	d	file:
+SLAVE_DEVICE_BUSY	modbus.h	140;"	d
+SLAVE_DEVICE_FAILURE	modbus.h	137;"	d
+SOCKET_FAILURE	modbus.h	154;"	d
+SPACE_TIME	main.cpp	/^static int SPACE_TIME = 50;$/;"	v	file:
+SRC	Makefile	/^SRC:=$(shell ls *.c)$/;"	m
+STEP_MODE	main.cpp	/^static int STEP_MODE = 0;$/;"	v	file:
+TAB_CHECKSUM_LENGTH	modbus.cpp	/^static const int TAB_CHECKSUM_LENGTH[2] =$/;"	v	file:
+TAB_ERROR_MSG	modbus.cpp	/^static const char *TAB_ERROR_MSG[] =$/;"	v	file:
+TAB_HEADER_LENGTH	modbus.cpp	/^static const int TAB_HEADER_LENGTH[2] =$/;"	v	file:
+TAB_MAX_ADU_LENGTH	modbus.cpp	/^static const int TAB_MAX_ADU_LENGTH[2] =$/;"	v	file:
+TARGET	Makefile	/^TARGET:=heart_beat.bin$/;"	m
+TCP	modbus.h	/^    RTU = 0, TCP$/;"	e	enum:__anon1
+TIME_OUT_BEGIN_OF_TRAME	modbus.h	99;"	d
+TIME_OUT_END_OF_TRAME	modbus.h	100;"	d
+TRUE	modbus.h	107;"	d
+UINT16	modbus.h	40;"	d
+UINT16_MAX	modbus.cpp	60;"	d	file:
+UINT32	modbus.h	42;"	d
+UINT64	modbus.h	44;"	d
+UINT8	modbus.h	38;"	d
+UNKNOWN_ERROR_MSG	modbus.cpp	65;"	d	file:
+VOID	modbus.h	/^typedef void  VOID;$/;"	t
+WAIT_DATA	modbus.cpp	643;"	d	file:
+WAIT_TIME	main.cpp	/^static int WAIT_TIME = 0;$/;"	v	file:
+WORD	modbus.h	/^typedef unsigned short WORD;$/;"	t
+_MODBUS_H_	modbus.h	19;"	d
+baud	modbus.h	/^    int baud;$/;"	m	struct:__anon3
+build_query_basis	modbus.cpp	/^int c_modbus::build_query_basis (modbus_param_t *mb_param,$/;"	f	class:c_modbus
+build_query_basis_rtu	modbus.cpp	/^int c_modbus::build_query_basis_rtu (int slave, int function, int start_addr, int nb, uint8_t *query)$/;"	f	class:c_modbus
+build_query_basis_tcp	modbus.cpp	/^int c_modbus::build_query_basis_tcp (int slave, int function,$/;"	f	class:c_modbus
+build_response_basis	modbus.cpp	/^int c_modbus::build_response_basis (modbus_param_t *mb_param, sft_t *sft, uint8_t *response)$/;"	f	class:c_modbus
+build_response_basis_rtu	modbus.cpp	/^int c_modbus::build_response_basis_rtu (sft_t *sft, uint8_t *response)$/;"	f	class:c_modbus
+build_response_basis_tcp	modbus.cpp	/^int c_modbus::build_response_basis_tcp (sft_t *sft, uint8_t *response)$/;"	f	class:c_modbus
+c_modbus	modbus.h	/^class c_modbus$/;"	c
+check_crc16	modbus.cpp	/^int c_modbus::check_crc16 (modbus_param_t *mb_param, uint8_t *msg, const int msg_length)$/;"	f	class:c_modbus
+compute_query_length_data	modbus.cpp	/^int c_modbus::compute_query_length_data (modbus_param_t *mb_param, uint8_t *msg)$/;"	f	class:c_modbus
+compute_query_length_header	modbus.cpp	/^uint8_t c_modbus::compute_query_length_header (int function)$/;"	f	class:c_modbus
+compute_response_length	modbus.cpp	/^unsigned int c_modbus::compute_response_length (modbus_param_t *mb_param, uint8_t *query , uint8_t data_type)$/;"	f	class:c_modbus
+crc16	modbus.cpp	/^uint16_t c_modbus::crc16 (uint8_t *buffer, uint16_t buffer_length)$/;"	f	class:c_modbus
+data_bit	modbus.h	/^    uint8_t data_bit;$/;"	m	struct:__anon3
+debug	modbus.h	/^    int debug;$/;"	m	struct:__anon3
+device	modbus.h	/^    char device[16];$/;"	m	struct:__anon3
+device	modbus.h	/^    char device[64];$/;"	m	struct:__anon3
+error_handling	modbus.h	/^    uint8_t error_handling;$/;"	m	struct:__anon3
+error_handling_t	modbus.h	/^typedef enum { FLUSH_OR_CONNECT_ON_ERROR, NOP_ON_ERROR } error_handling_t;$/;"	t	typeref:enum:__anon2
+error_treat	modbus.cpp	/^void c_modbus::error_treat (modbus_param_t *mb_param, int code, const char *string)$/;"	f	class:c_modbus
+fd	modbus.h	/^    int fd;$/;"	m	struct:__anon3
+force_multiple_coils	modbus.cpp	/^int c_modbus::force_multiple_coils (modbus_param_t *mb_param, int start_addr, int nb,$/;"	f	class:c_modbus
+force_single_coil	modbus.cpp	/^int c_modbus::force_single_coil (modbus_param_t *mb_param, int coil_addr, int state, int select_time)$/;"	f	class:c_modbus
+function	modbus.cpp	/^    int function;$/;"	m	struct:__anon5	file:
+get_byte_from_bits	modbus.cpp	/^uint8_t c_modbus::get_byte_from_bits (const uint8_t *src, int address, int nb_bits)$/;"	f	class:c_modbus
+ip	modbus.h	/^    char ip[16];$/;"	m	struct:__anon3
+main	main.cpp	/^int main (int argc, char *argv[])$/;"	f
+modbus_close	modbus.cpp	/^void c_modbus::modbus_close (modbus_param_t *mb_param)$/;"	f	class:c_modbus
+modbus_close_rtu	modbus.cpp	/^void c_modbus::modbus_close_rtu (modbus_param_t *mb_param)$/;"	f	class:c_modbus
+modbus_close_tcp	modbus.cpp	/^void c_modbus::modbus_close_tcp (modbus_param_t *mb_param)$/;"	f	class:c_modbus
+modbus_connect	modbus.cpp	/^int c_modbus::modbus_connect (modbus_param_t *mb_param)$/;"	f	class:c_modbus
+modbus_connect_rtu	modbus.cpp	/^int c_modbus::modbus_connect_rtu (modbus_param_t *mb_param)$/;"	f	class:c_modbus
+modbus_connect_tcp	modbus.cpp	/^int c_modbus::modbus_connect_tcp (modbus_param_t *mb_param)$/;"	f	class:c_modbus
+modbus_flush	modbus.cpp	/^void c_modbus::modbus_flush (modbus_param_t *mb_param)$/;"	f	class:c_modbus
+modbus_init_rtu	modbus.cpp	/^void c_modbus::modbus_init_rtu (modbus_param_t *mb_param, const char *device,$/;"	f	class:c_modbus
+modbus_init_tcp	modbus.cpp	/^void c_modbus::modbus_init_tcp (modbus_param_t *mb_param, const char *ip, int port, int slave)$/;"	f	class:c_modbus
+modbus_mapping_free	modbus.cpp	/^void c_modbus::modbus_mapping_free (modbus_mapping_t *mb_mapping)$/;"	f	class:c_modbus
+modbus_mapping_new	modbus.cpp	/^int c_modbus::modbus_mapping_new (modbus_mapping_t *mb_mapping,$/;"	f	class:c_modbus
+modbus_mapping_t	modbus.h	/^} modbus_mapping_t;$/;"	t	typeref:struct:__anon4
+modbus_param_t	modbus.h	/^} modbus_param_t;$/;"	t	typeref:struct:__anon3
+modbus_read_float	modbus.cpp	/^float c_modbus::modbus_read_float (const uint16_t *src)$/;"	f	class:c_modbus
+modbus_receive	modbus.cpp	/^int c_modbus::modbus_receive (modbus_param_t *mb_param, uint8_t *query, uint8_t *response,$/;"	f	class:c_modbus
+modbus_send	modbus.cpp	/^int c_modbus::modbus_send (modbus_param_t *mb_param, uint8_t *query, int query_length)$/;"	f	class:c_modbus
+modbus_set_debug	modbus.cpp	/^void c_modbus::modbus_set_debug (modbus_param_t *mb_param, int boolean)$/;"	f	class:c_modbus
+modbus_set_error_handling	modbus.cpp	/^void c_modbus::modbus_set_error_handling (modbus_param_t *mb_param,$/;"	f	class:c_modbus
+modbus_set_slave	modbus.cpp	/^void c_modbus::modbus_set_slave (modbus_param_t *mb_param, int slave)$/;"	f	class:c_modbus
+modbus_slave_accept_tcp	modbus.cpp	/^int c_modbus::modbus_slave_accept_tcp (modbus_param_t *mb_param, int *socket)$/;"	f	class:c_modbus
+modbus_slave_close_tcp	modbus.cpp	/^void c_modbus::modbus_slave_close_tcp (int socket)$/;"	f	class:c_modbus
+modbus_slave_listen_tcp	modbus.cpp	/^int c_modbus::modbus_slave_listen_tcp (modbus_param_t *mb_param, int nb_connection)$/;"	f	class:c_modbus
+modbus_slave_manage	modbus.cpp	/^void c_modbus::modbus_slave_manage (modbus_param_t *mb_param, const uint8_t *query,$/;"	f	class:c_modbus
+modbus_slave_receive	modbus.cpp	/^int c_modbus::modbus_slave_receive (modbus_param_t *mb_param, int sockfd, uint8_t *query,$/;"	f	class:c_modbus
+modbus_write_float	modbus.cpp	/^void c_modbus::modbus_write_float (float real, uint16_t *dest)$/;"	f	class:c_modbus
+nb_coil_status	modbus.h	/^    int nb_coil_status;$/;"	m	struct:__anon4
+nb_holding_registers	modbus.h	/^    int nb_holding_registers;$/;"	m	struct:__anon4
+nb_input_registers	modbus.h	/^    int nb_input_registers;$/;"	m	struct:__anon4
+nb_input_status	modbus.h	/^    int nb_input_status;$/;"	m	struct:__anon4
+old_tios	modbus.h	/^    struct termios old_tios;$/;"	m	struct:__anon3	typeref:struct:__anon3::termios
+parity	modbus.h	/^    char parity[5];$/;"	m	struct:__anon3
+parse_opts	main.cpp	/^void parse_opts (int argc, char *argv[])$/;"	f
+port	modbus.h	/^    int port;$/;"	m	struct:__anon3
+preset_multiple_registers	modbus.cpp	/^int c_modbus::preset_multiple_registers (modbus_param_t *mb_param, int start_addr, int nb,$/;"	f	class:c_modbus
+preset_single_register	modbus.cpp	/^int c_modbus::preset_single_register (modbus_param_t *mb_param, int reg_addr, int value, int select_time)$/;"	f	class:c_modbus
+print_usage	main.cpp	/^void print_usage (const char *prog)$/;"	f
+rcv_msg	modbus.cpp	/^int c_modbus::rcv_msg (modbus_param_t *mb_param, uint8_t *msg, int select_time, int wait_time)$/;"	f	class:c_modbus
+read_coil_status	modbus.cpp	/^int c_modbus::read_coil_status (modbus_param_t *mb_param, int start_addr,$/;"	f	class:c_modbus
+read_holding_registers	modbus.cpp	/^int c_modbus::read_holding_registers (modbus_param_t *mb_param, int start_addr, int nb,$/;"	f	class:c_modbus
+read_input_registers	modbus.cpp	/^int c_modbus::read_input_registers (modbus_param_t *mb_param, int start_addr, int nb,$/;"	f	class:c_modbus
+read_input_status	modbus.cpp	/^int c_modbus::read_input_status (modbus_param_t *mb_param, int start_addr,$/;"	f	class:c_modbus
+read_io_status	modbus.cpp	/^int c_modbus::read_io_status (modbus_param_t *mb_param, int function,$/;"	f	class:c_modbus
+read_registers	modbus.cpp	/^int c_modbus::read_registers (modbus_param_t *mb_param, int function, int start_addr,$/;"	f	class:c_modbus
+receive_msg	modbus.cpp	/^int c_modbus::receive_msg (modbus_param_t *mb_param, int msg_length_computed, uint8_t *msg, int select_time)$/;"	f	class:c_modbus
+report_slave_id	modbus.cpp	/^int c_modbus::report_slave_id (modbus_param_t *mb_param, uint8_t *data_dest, int select_time)$/;"	f	class:c_modbus
+response_exception	modbus.cpp	/^int c_modbus::response_exception (modbus_param_t *mb_param, sft_t *sft,$/;"	f	class:c_modbus
+response_io_status	modbus.cpp	/^int c_modbus::response_io_status (int address, int nb,$/;"	f	class:c_modbus
+serial_send	modbus.cpp	/^int c_modbus::serial_send (modbus_param_t *mb_param, uint8_t *query, int query_length)$/;"	f	class:c_modbus
+set_bits_from_byte	modbus.cpp	/^void c_modbus::set_bits_from_byte (uint8_t *dest, int address, const uint8_t value)$/;"	f	class:c_modbus
+set_bits_from_bytes	modbus.cpp	/^void c_modbus::set_bits_from_bytes (uint8_t *dest, int address, int nb_bits,$/;"	f	class:c_modbus
+set_message_length_tcp	modbus.cpp	/^void c_modbus::set_message_length_tcp (uint8_t *msg, int msg_length)$/;"	f	class:c_modbus
+set_single	modbus.cpp	/^int c_modbus::set_single (modbus_param_t *mb_param, int function, int addr, int value,$/;"	f	class:c_modbus
+sft_t	modbus.cpp	/^} sft_t;$/;"	t	typeref:struct:__anon5	file:
+slave	modbus.cpp	/^    int slave;$/;"	m	struct:__anon5	file:
+slave	modbus.h	/^    int slave;$/;"	m	struct:__anon3
+stop_bit	modbus.h	/^    uint8_t stop_bit;$/;"	m	struct:__anon3
+t_id	modbus.cpp	/^    int t_id;$/;"	m	struct:__anon5	file:
+tab_coil_status	modbus.h	/^    uint8_t *tab_coil_status;$/;"	m	struct:__anon4
+tab_holding_registers	modbus.h	/^    uint16_t *tab_holding_registers;$/;"	m	struct:__anon4
+tab_input_registers	modbus.h	/^    uint16_t *tab_input_registers;$/;"	m	struct:__anon4
+tab_input_status	modbus.h	/^    uint8_t *tab_input_status;$/;"	m	struct:__anon4
+table_crc_hi	modbus.cpp	/^static uint8_t table_crc_hi[] =$/;"	v	file:
+table_crc_lo	modbus.cpp	/^static uint8_t table_crc_lo[] =$/;"	v	file:
+type_com	modbus.h	/^    type_com_t type_com;$/;"	m	struct:__anon3
+type_com_t	modbus.h	/^type_com_t;$/;"	t	typeref:enum:__anon1
+wcx_sleep	modbus.cpp	/^void c_modbus::wcx_sleep (long int s, long int us)$/;"	f	class:c_modbus
+wprintf	modbus.cpp	70;"	d	file:
+wprintf	modbus.cpp	73;"	d	file:
