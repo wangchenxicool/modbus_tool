@@ -1,8 +1,9 @@
-#ARCH=ARM
+ARCH=ARM
 OTHERSLIBPWD=/home/usrc
 
 ifeq ($(ARCH),ARM)
-CROSS=arm-linux-
+#CROSS=arm-linux-
+CROSS=arm-linux-gnueabihf-
 endif
 
 SRC:=$(shell ls *.c)

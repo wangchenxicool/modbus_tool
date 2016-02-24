@@ -76,8 +76,7 @@
 
 static const uint8_t NB_TAB_ERROR_MSG = 12;
 
-static const char *TAB_ERROR_MSG[] =
-{
+static const char *TAB_ERROR_MSG[] = {
     /* 0x00 */ UNKNOWN_ERROR_MSG,
     /* 0x01 */ "Illegal function code",
     /* 0x02 */ "Illegal data address",
@@ -93,8 +92,7 @@ static const char *TAB_ERROR_MSG[] =
 };
 
 /* Table of CRC values for high-order byte */
-static uint8_t table_crc_hi[] =
-{
+static uint8_t table_crc_hi[] = {
     0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0,
     0x80, 0x41, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41,
     0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0,
@@ -124,8 +122,7 @@ static uint8_t table_crc_hi[] =
 };
 
 /* Table of CRC values for low-order byte */
-static uint8_t table_crc_lo[] =
-{
+static uint8_t table_crc_lo[] = {
     0x00, 0xC0, 0xC1, 0x01, 0xC3, 0x03, 0x02, 0xC2, 0xC6, 0x06,
     0x07, 0xC7, 0x05, 0xC5, 0xC4, 0x04, 0xCC, 0x0C, 0x0D, 0xCD,
     0x0F, 0xCF, 0xCE, 0x0E, 0x0A, 0xCA, 0xCB, 0x0B, 0xC9, 0x09,
@@ -154,62 +151,51 @@ static uint8_t table_crc_lo[] =
     0x43, 0x83, 0x41, 0x81, 0x80, 0x40
 };
 
-static const int TAB_HEADER_LENGTH[2] =
-{
+static const int TAB_HEADER_LENGTH[2] = {
     HEADER_LENGTH_RTU,
     HEADER_LENGTH_TCP
 };
 
-static const int TAB_CHECKSUM_LENGTH[2] =
-{
+static const int TAB_CHECKSUM_LENGTH[2] = {
     CHECKSUM_LENGTH_RTU,
     CHECKSUM_LENGTH_TCP
 };
 
-static const int TAB_MAX_ADU_LENGTH[2] =
-{
+static const int TAB_MAX_ADU_LENGTH[2] = {
     MAX_ADU_LENGTH_RTU,
     MAX_ADU_LENGTH_TCP,
 };
 
 c_modbus::c_modbus (const char *device,
                     int baud, const char *parity, int data_bit,
-                    int stop_bit, int slave)
-{
+                    int stop_bit, int slave) {
     mb_param = new modbus_param_t;
 
     modbus_init_rtu (device, baud, parity, data_bit, stop_bit, slave);
 }
 
-c_modbus::~c_modbus ()
-{
+c_modbus::~c_modbus () {
     delete mb_param;
 }
 
-void c_modbus::modbus_sleep (long int s, long int us)
-{
+void c_modbus::modbus_sleep (long int s, long int us) {
     struct timeval tv;
     tv.tv_sec = s;
     tv.tv_usec = us;
-    if (select (0, NULL, NULL, NULL, &tv) < 0)
-    {
+    if (select (0, NULL, NULL, NULL, &tv) < 0) {
         perror ("[modbus_sleep: select error]");
     }
 }
 
 /* Treats errors and flush or close connection if necessary */
-void c_modbus::error_treat (int code, const char *string)
-{
+void c_modbus::error_treat (int code, const char *string) {
     /*fprintf ( stderr, "\nerror_treat: ERROR %s (%0X)\n", string, -code );*/
-    if (mb_param->debug)
-    {
+    if (mb_param->debug) {
         wprintf ("\033[31;40;1m \nerror_treat: %s (%0X)\n\033[0m", string, -code);
     }
 
-    if (mb_param->error_handling == FLUSH_OR_CONNECT_ON_ERROR)
-    {
-        switch (code)
-        {
+    if (mb_param->error_handling == FLUSH_OR_CONNECT_ON_ERROR) {
+        switch (code) {
         case INVALID_DATA:
         case INVALID_CRC:
         case INVALID_EXCEPTION_CODE:
@@ -228,17 +214,12 @@ void c_modbus::error_treat (int code, const char *string)
     } // end if
 }
 
-void c_modbus::modbus_flush ()
-{
-    if (mb_param->type_com == RTU)
-    {
+void c_modbus::modbus_flush () {
+    if (mb_param->type_com == RTU) {
         tcflush (mb_param->fd, TCIOFLUSH);
-    }
-    else
-    {
+    } else {
         int ret;
-        do
-        {
+        do {
             /* Extract the garbage from the socket */
             char devnull[MAX_ADU_LENGTH_TCP];
 #if (!HAVE_DECL___CYGWIN__)
@@ -253,39 +234,31 @@ void c_modbus::modbus_flush ()
             FD_ZERO (&rfds);
             FD_SET (mb_param->fd, &rfds);
             ret = select (mb_param->fd + 1, &rfds, NULL, NULL, &tv);
-            if (ret > 0)
-            {
+            if (ret > 0) {
                 ret = recv (mb_param->fd, devnull, MAX_ADU_LENGTH_TCP, 0);
-            }
-            else if (ret == -1)
-            {
+            } else if (ret == -1) {
                 /* error_treat() doesn't call modbus_flush() in
                 this case (avoid infinite loop) */
                 error_treat (SELECT_FAILURE, "Select failure");
             }
 #endif
-            if (mb_param->debug && ret > 0)
-            {
+            if (mb_param->debug && ret > 0) {
                 wprintf ("%d bytes flushed\n", ret);
             }
-        }
-        while (ret > 0);
+        } while (ret > 0);
     }
 }
 
 /* Computes the length of the expected response */
-unsigned int c_modbus::compute_response_length (uint8_t *query , uint8_t data_type)
-{
+unsigned int c_modbus::compute_response_length (uint8_t *query , uint8_t data_type) {
     int length;
     int offset;
 
     offset = TAB_HEADER_LENGTH[mb_param->type_com];
 
-    switch (query[offset])
-    {
+    switch (query[offset]) {
     case FC_READ_COIL_STATUS:
-    case FC_READ_INPUT_STATUS:
-    {
+    case FC_READ_INPUT_STATUS: {
         /* Header + nb values (code from force_multiple_coils) */
         int nb = (query[offset + 3] << 8) | query[offset + 4];
         length = 2 + (nb / 8) + ( (nb % 8) ? 1 : 0);
@@ -293,8 +266,7 @@ unsigned int c_modbus::compute_response_length (uint8_t *query , uint8_t data_ty
     break;
     case FC_READ_HOLDING_REGISTERS:
     case FC_READ_INPUT_REGISTERS:
-        switch (data_type)
-        {
+        switch (data_type) {
         case    0:      // 数据类型为8位整数
         case    1:      // 数据类型为8位无符号整数
             /* Header + 1 * nb values */
@@ -351,8 +323,7 @@ unsigned int c_modbus::compute_response_length (uint8_t *query , uint8_t data_ty
 }
 
 /* Builds a RTU query header */
-int c_modbus::build_query_basis_rtu (int slave, int function, int start_addr, int nb, uint8_t *query)
-{
+int c_modbus::build_query_basis_rtu (int slave, int function, int start_addr, int nb, uint8_t *query) {
     query[0] = slave;
     query[1] = function;
     query[2] = start_addr >> 8;
@@ -366,8 +337,7 @@ int c_modbus::build_query_basis_rtu (int slave, int function, int start_addr, in
 /* Builds a TCP query header */
 int c_modbus::build_query_basis_tcp (int slave, int function,
                                      int start_addr, int nb,
-                                     uint8_t *query)
-{
+                                     uint8_t *query) {
 
     /* Extract from MODBUS Messaging on TCP/IP Implementation
        Guide V1.0b (page 23/46):
@@ -403,8 +373,7 @@ int c_modbus::build_query_basis_tcp (int slave, int function,
 }
 
 int c_modbus::build_query_basis (int function, int start_addr,
-                                 int nb, uint8_t *query)
-{
+                                 int nb, uint8_t *query) {
     if (mb_param->type_com == RTU)
         return build_query_basis_rtu (mb_param->slave, function, start_addr, nb, query);
     else
@@ -412,8 +381,7 @@ int c_modbus::build_query_basis (int function, int start_addr,
 }
 
 /* Builds a RTU response header */
-int c_modbus::build_response_basis_rtu (sft_t *sft, uint8_t *response)
-{
+int c_modbus::build_response_basis_rtu (sft_t *sft, uint8_t *response) {
     response[0] = sft->slave;
     response[1] = sft->function;
 
@@ -421,8 +389,7 @@ int c_modbus::build_response_basis_rtu (sft_t *sft, uint8_t *response)
 }
 
 /* Builds a TCP response header */
-int c_modbus::build_response_basis_tcp (sft_t *sft, uint8_t *response)
-{
+int c_modbus::build_response_basis_tcp (sft_t *sft, uint8_t *response) {
     /* Extract from MODBUS Messaging on TCP/IP Implementation
        Guide V1.0b (page 23/46):
        The transaction identifier is used to associate the future
@@ -442,8 +409,7 @@ int c_modbus::build_response_basis_tcp (sft_t *sft, uint8_t *response)
     return PRESET_RESPONSE_LENGTH_TCP;
 }
 
-int c_modbus::build_response_basis (sft_t *sft, uint8_t *response)
-{
+int c_modbus::build_response_basis (sft_t *sft, uint8_t *response) {
     if (mb_param->type_com == RTU)
         return build_response_basis_rtu (sft, response);
     else
@@ -451,8 +417,7 @@ int c_modbus::build_response_basis (sft_t *sft, uint8_t *response)
 }
 
 /* Sets the length of TCP message in the message (query and response) */
-void c_modbus::set_message_length_tcp (uint8_t *msg, int msg_length)
-{
+void c_modbus::set_message_length_tcp (uint8_t *msg, int msg_length) {
     /* Substract the header length to the message length */
     int mbap_length = msg_length - 6;
 
@@ -461,15 +426,13 @@ void c_modbus::set_message_length_tcp (uint8_t *msg, int msg_length)
 }
 
 /* Fast CRC */
-uint16_t c_modbus::crc16 (uint8_t *buffer, uint16_t buffer_length)
-{
+uint16_t c_modbus::crc16 (uint8_t *buffer, uint16_t buffer_length) {
     uint8_t crc_hi = 0xFF; /* high CRC byte initialized */
     uint8_t crc_lo = 0xFF; /* low CRC byte initialized */
     unsigned int i; /* will index into CRC lookup */
 
     /* pass through message buffer */
-    while (buffer_length--)
-    {
+    while (buffer_length--) {
         i = crc_hi ^ *buffer++; /* calculate the CRC  */
         crc_hi = crc_lo ^ table_crc_hi[i];
         crc_lo = table_crc_lo[i];
@@ -479,8 +442,7 @@ uint16_t c_modbus::crc16 (uint8_t *buffer, uint16_t buffer_length)
 }
 
 /* If CRC is correct returns msg_length else returns INVALID_CRC */
-int c_modbus::check_crc16 (uint8_t *msg, const int msg_length)
-{
+int c_modbus::check_crc16 (uint8_t *msg, const int msg_length) {
     int ret;
     uint16_t crc_calc;
     uint16_t crc_received;
@@ -489,12 +451,9 @@ int c_modbus::check_crc16 (uint8_t *msg, const int msg_length)
     crc_received = (msg[msg_length - 2] << 8) | msg[msg_length - 1];
 
     /* Check CRC of msg */
-    if (crc_calc == crc_received)
-    {
+    if (crc_calc == crc_received) {
         ret = msg_length;
-    }
-    else
-    {
+    } else {
         char s_error[128];
         sprintf (s_error, "!!!!!!!!!!!!!invalid crc received %0X - crc_calc %0X",
                  crc_received, crc_calc);
@@ -506,43 +465,35 @@ int c_modbus::check_crc16 (uint8_t *msg, const int msg_length)
 }
 
 /* Sends a query/response over a serial or a TCP communication */
-int c_modbus::modbus_send (uint8_t *query, int query_length)
-{
+int c_modbus::modbus_send (uint8_t *query, int query_length) {
     int i;
     int ret;
     uint16_t s_crc;
 
-    if (mb_param->type_com == RTU)
-    {
+    if (mb_param->type_com == RTU) {
         s_crc = crc16 (query, query_length);
         query[query_length++] = s_crc >> 8;
         query[query_length++] = s_crc & 0x00FF;
-    }
-    else
-    {
+    } else {
         set_message_length_tcp (query, query_length);
     }
 
-    if (mb_param->debug)
-    {
+    if (mb_param->debug) {
         wprintf ("\033[34;40;1m \nsend:\033[0m");
         for (i = 0; i < query_length; i++)
             wprintf ("[%.2X]", query[i]);
         wprintf ("\n");
     }
 
-    if (mb_param->type_com == RTU)
-    {
+    if (mb_param->type_com == RTU) {
         /*tcflush ( mb_param->fd, TCIOFLUSH ); */
         ret = write (mb_param->fd, query, query_length);
-    }
-    else
+    } else
         ret = send (mb_param->fd, query, query_length, MSG_NOSIGNAL);
 
     /* Return the number of bytes written (0 to n)
     or SOCKET_FAILURE on error */
-    if ( (ret == -1) || (ret != query_length))
-    {
+    if ( (ret == -1) || (ret != query_length)) {
         ret = SOCKET_FAILURE;
         error_treat (ret, "modbus_send: Write socket failure");
     }
@@ -551,45 +502,36 @@ int c_modbus::modbus_send (uint8_t *query, int query_length)
 }
 
 /* Sends a query/response over a serial or a TCP communication */
-int c_modbus::serial_send (uint8_t *query, int query_length)
-{
+int c_modbus::serial_send (uint8_t *query, int query_length) {
     int i;
     int ret;
     uint16_t s_crc;
 
-    if (mb_param->type_com == RTU)
-    {
+    if (mb_param->type_com == RTU) {
         //s_crc = crc16 (query, query_length);
         //query[query_length++] = s_crc >> 8;
         //query[query_length++] = s_crc & 0x00FF;
-    }
-    else
-    {
+    } else {
         set_message_length_tcp (query, query_length);
     }
 
-    if (mb_param->debug)
-    {
+    if (mb_param->debug) {
         wprintf ("\033[34;40;1m \nsend:\033[0m");
         for (i = 0; i < query_length; i++)
             wprintf ("[%.2X]", query[i]);
         wprintf ("\n");
     }
 
-    if (mb_param->type_com == RTU)
-    {
+    if (mb_param->type_com == RTU) {
         /*tcflush ( mb_param->fd, TCIOFLUSH ); */
         ret = write (mb_param->fd, query, query_length);
-    }
-    else
-    {
+    } else {
         ret = send (mb_param->fd, query, query_length, MSG_NOSIGNAL);
     }
 
     /* Return the number of bytes written (0 to n)
     or SOCKET_FAILURE on error */
-    if ( (ret == -1) || (ret != query_length))
-    {
+    if ( (ret == -1) || (ret != query_length)) {
         ret = SOCKET_FAILURE;
         error_treat (ret, "modbus_send: Write socket failure");
     }
@@ -598,8 +540,7 @@ int c_modbus::serial_send (uint8_t *query, int query_length)
 }
 
 /* Computes the length of the header following the function code */
-uint8_t c_modbus::compute_query_length_header (int function)
-{
+uint8_t c_modbus::compute_query_length_header (int function) {
     int length;
 
     if (function <= FC_FORCE_SINGLE_COIL ||
@@ -619,8 +560,7 @@ uint8_t c_modbus::compute_query_length_header (int function)
 }
 
 /* Computes the length of the data to write in the query */
-int c_modbus::compute_query_length_data (uint8_t *msg)
-{
+int c_modbus::compute_query_length_data (uint8_t *msg) {
     int function = msg[TAB_HEADER_LENGTH[mb_param->type_com]];
     int length;
 
@@ -680,8 +620,7 @@ int c_modbus::compute_query_length_data (uint8_t *msg)
    On success, return the number of received characters. On error, return
    a negative value.
 */
-int c_modbus::receive_msg (int msg_length_computed, uint8_t *msg, int select_time)
-{
+int c_modbus::receive_msg (int msg_length_computed, uint8_t *msg, int select_time) {
     int select_ret;
     int read_ret;
     fd_set rfds;
@@ -693,8 +632,7 @@ int c_modbus::receive_msg (int msg_length_computed, uint8_t *msg, int select_tim
 
     int msg_length = 0;
 
-    if (mb_param->debug)
-    {
+    if (mb_param->debug) {
         if (msg_length_computed == MSG_LENGTH_UNDEFINED)
             wprintf ("\nWaiting for a message...\n");
         else
@@ -705,8 +643,7 @@ int c_modbus::receive_msg (int msg_length_computed, uint8_t *msg, int select_tim
     FD_ZERO (&rfds);
     FD_SET (mb_param->fd, &rfds);
 
-    if (msg_length_computed == MSG_LENGTH_UNDEFINED)
-    {
+    if (msg_length_computed == MSG_LENGTH_UNDEFINED) {
         /* Wait for a message */
         tv.tv_sec = 5;
         tv.tv_usec = 0;
@@ -717,9 +654,7 @@ int c_modbus::receive_msg (int msg_length_computed, uint8_t *msg, int select_tim
         * code because all packets have that information. */
         state = FUNCTION;
         msg_length_computed = TAB_HEADER_LENGTH[mb_param->type_com] + 1;
-    }
-    else
-    {
+    } else {
         tv.tv_sec = 0;
         /*tv.tv_usec = TIME_OUT_BEGIN_OF_TRAME;*/
         tv.tv_usec = select_time * 1000;
@@ -732,23 +667,18 @@ int c_modbus::receive_msg (int msg_length_computed, uint8_t *msg, int select_tim
     WAIT_DATA();
 
     p_msg = msg;
-    if (mb_param->debug)
-    {
+    if (mb_param->debug) {
         wprintf ("\033[32;40;1m \nrcv:\033[0m");
     }
-    while (select_ret)
-    {
+    while (select_ret) {
         if (mb_param->type_com == RTU)
             read_ret = read (mb_param->fd, p_msg, length_to_read);
         else
             read_ret = recv (mb_param->fd, p_msg, length_to_read, 0);
 
-        if (read_ret == 0)
-        {
+        if (read_ret == 0) {
             return CONNECTION_CLOSED;
-        }
-        else if (read_ret < 0)
-        {
+        } else if (read_ret < 0) {
             /* The only negative possible value is -1 */
             error_treat (SOCKET_FAILURE, "receive_msg: Read socket failure");
             return SOCKET_FAILURE;
@@ -758,22 +688,17 @@ int c_modbus::receive_msg (int msg_length_computed, uint8_t *msg, int select_tim
         msg_length += read_ret;
 
         /* Display the hex code of each character received */
-        if (mb_param->debug)
-        {
+        if (mb_param->debug) {
             int i;
             for (i = 0; i < read_ret; i++)
                 wprintf ("<%.2X>", p_msg[i]);
         }
 
-        if (msg_length < msg_length_computed)
-        {
+        if (msg_length < msg_length_computed) {
             /* Message incomplete */
             length_to_read = msg_length_computed - msg_length;
-        }
-        else
-        {
-            switch (state)
-            {
+        } else {
+            switch (state) {
             case FUNCTION:
                 /* Function code position */
                 length_to_read = compute_query_length_header (msg[TAB_HEADER_LENGTH[mb_param->type_com]]);
@@ -786,8 +711,7 @@ int c_modbus::receive_msg (int msg_length_computed, uint8_t *msg, int select_tim
             case BYTE:
                 length_to_read = compute_query_length_data (msg);
                 msg_length_computed += length_to_read;
-                if (msg_length_computed > TAB_MAX_ADU_LENGTH[mb_param->type_com])
-                {
+                if (msg_length_computed > TAB_MAX_ADU_LENGTH[mb_param->type_com]) {
                     error_treat (INVALID_DATA, "receive: Too many data");
                     return INVALID_DATA;
                 }
@@ -803,42 +727,34 @@ int c_modbus::receive_msg (int msg_length_computed, uint8_t *msg, int select_tim
         /* Moves the pointer to receive other data */
         p_msg = & (p_msg[read_ret]);
 
-        if (length_to_read > 0)
-        {
+        if (length_to_read > 0) {
             /* If no character at the buffer wait
             TIME_OUT_END_OF_TRAME before to generate an error. */
             tv.tv_sec = 0;
             tv.tv_usec = TIME_OUT_END_OF_TRAME;
 
             WAIT_DATA();
-        }
-        else
-        {
+        } else {
             /* All chars are received */
             select_ret = FALSE;
         }
     } // end while
 
-    if (mb_param->debug)
-    {
+    if (mb_param->debug) {
         wprintf ("\n");
     }
 
-    if (mb_param->type_com == RTU)
-    {
+    if (mb_param->type_com == RTU) {
         /* Returns msg_length on success and a negative value on
         failure */
         return check_crc16 (msg, msg_length);
-    }
-    else
-    {
+    } else {
         /* OK */
         return msg_length;
     }
 }
 
-int c_modbus::rcv_msg (uint8_t *msg, int select_time, int wait_time)
-{
+int c_modbus::rcv_msg (uint8_t *msg, int select_time, int wait_time) {
     int select_ret;
     int read_ret;
     fd_set rfds;
@@ -848,8 +764,7 @@ int c_modbus::rcv_msg (uint8_t *msg, int select_time, int wait_time)
     uint8_t *p_msg;
     enum { FUNCTION, BYTE, COMPLETE };
 
-    if (mb_param->debug)
-    {
+    if (mb_param->debug) {
         wprintf ("\nWaiting for a message...\n");
     }
 
@@ -863,52 +778,39 @@ int c_modbus::rcv_msg (uint8_t *msg, int select_time, int wait_time)
     modbus_sleep (0, wait_time * 1000);
 
     p_msg = msg;
-    if (mb_param->debug)
-    {
+    if (mb_param->debug) {
         wprintf ("\033[32;40;1m \nrcv:\033[0m");
     }
-    if (mb_param->type_com == RTU)
-    {
+    if (mb_param->type_com == RTU) {
         read_ret = read (mb_param->fd, p_msg, length_to_read);
-    }
-    else
-    {
+    } else {
         read_ret = recv (mb_param->fd, p_msg, length_to_read, 0);
     }
-    if (read_ret == 0)
-    {
+    if (read_ret == 0) {
         return CONNECTION_CLOSED;
-    }
-    else if (read_ret < 0)
-    {
+    } else if (read_ret < 0) {
         /* The only negative possible value is -1 */
         error_treat (SOCKET_FAILURE, "receive_msg: Read socket failure");
         return SOCKET_FAILURE;
     }
 
     /* Display the hex code of each character received */
-    if (mb_param->debug)
-    {
+    if (mb_param->debug) {
         int i;
-        for (i = 0; i < read_ret; i++)
-        {
+        for (i = 0; i < read_ret; i++) {
             wprintf ("<%.2X>", p_msg[i]);
         }
     }
 
-    if (mb_param->debug)
-    {
+    if (mb_param->debug) {
         wprintf ("\n");
     }
 
-    if (mb_param->type_com == RTU)
-    {
+    if (mb_param->type_com == RTU) {
         /* Returns msg_length on success and a negative value on
         failure */
         return check_crc16 (msg, read_ret);
-    }
-    else
-    {
+    } else {
         /* OK */
         return read_ret;
     }
@@ -924,10 +826,8 @@ int c_modbus::rcv_msg (uint8_t *msg, int select_time, int wait_time)
    - query, message received
 */
 int c_modbus::modbus_slave_receive (int sockfd, uint8_t *query,
-                                    int select_time)
-{
-    if (sockfd != -1)
-    {
+                                    int select_time) {
+    if (sockfd != -1) {
         mb_param->fd = sockfd;
     }
 
@@ -945,8 +845,7 @@ int c_modbus::modbus_slave_receive (int sockfd, uint8_t *query,
    Note: all functions used to send or receive data with modbus return
    these values. */
 int c_modbus::modbus_receive (uint8_t *query, uint8_t *response,
-                              uint8_t data_type, int select_time)
-{
+                              uint8_t data_type, int select_time) {
     int ret;
     int times = 0; // 记录超时次数
     int response_length_computed;
@@ -955,16 +854,14 @@ int c_modbus::modbus_receive (uint8_t *query, uint8_t *response,
 again:
     response_length_computed = compute_response_length (query, data_type);
     ret = receive_msg (response_length_computed, response, select_time);
-    if (ret >= 0)
-    {
+    if (ret >= 0) {
         /* GOOD RESPONSE */
         int query_nb_value;
         int response_nb_value;
 
         /* The number of values is returned if it's corresponding
         * to the query */
-        switch (response[offset])
-        {
+        switch (response[offset]) {
         case FC_READ_COIL_STATUS:
         case FC_READ_INPUT_STATUS:
             /* Read functions, 8 values in a byte (nb
@@ -977,8 +874,7 @@ again:
         case FC_READ_HOLDING_REGISTERS:
         case FC_READ_INPUT_REGISTERS:
             query_nb_value = (query[offset + 3] << 8) + query[offset + 4];
-            switch (data_type)
-            {
+            switch (data_type) {
             case    0:      // 数据类型为8位整数
             case    1:      // 数据类型为8位无符号整数
                 /* Read functions 1 value = 1 bytes */
@@ -1025,12 +921,9 @@ again:
             query_nb_value = response_nb_value = 1;
         } // end switch (response[offset])
 
-        if (query_nb_value == response_nb_value)
-        {
+        if (query_nb_value == response_nb_value) {
             ret = response_nb_value;
-        }
-        else
-        {
+        } else {
             /*char *s_error = ( char* ) malloc ( 64 * sizeof ( char ) );*/
             char s_error[128];
             sprintf (s_error, "Quantity not corresponding to the query (%d != %d)", response_nb_value, query_nb_value);
@@ -1039,13 +932,11 @@ again:
             /*free ( s_error );*/
         }
     } // end if (ret >= 0)
-    else if (ret == MB_EXCEPTION)
-    {
+    else if (ret == MB_EXCEPTION) {
         /* EXCEPTION CODE RECEIVED */
 
         /* CRC must be checked here (not done in receive_msg) */
-        if (mb_param->type_com == RTU)
-        {
+        if (mb_param->type_com == RTU) {
             ret = check_crc16 (response, EXCEPTION_RESPONSE_LENGTH_RTU);
             if (ret < 0)
                 return ret;
@@ -1054,19 +945,15 @@ again:
         /* Check for exception response.
         0x80 + function is stored in the exception
         response. */
-        if (0x80 + query[offset] == response[offset])
-        {
+        if (0x80 + query[offset] == response[offset]) {
             int exception_code = response[offset + 1];
             // FIXME check test
-            if (exception_code < NB_TAB_ERROR_MSG)
-            {
+            if (exception_code < NB_TAB_ERROR_MSG) {
                 error_treat (-exception_code, TAB_ERROR_MSG[response[offset + 1]]);
                 /* RETURN THE EXCEPTION CODE */
                 /* Modbus error code is negative */
                 return -exception_code;
-            }
-            else
-            {
+            } else {
                 /* The chances are low to hit this
                 case but it can avoid a vicious
                 segfault */
@@ -1081,16 +968,12 @@ again:
                 return INVALID_EXCEPTION_CODE;
             }
         }
-    }
-    else if (ret == SELECT_TIMEOUT)
-    {
-        if (++times <= 1)
-        {
+    } else if (ret == SELECT_TIMEOUT) {
+        if (++times <= 1) {
             error_treat (ret, "modbus_receive");
             /*wprintf ( "\033[33;32;1m select_timeout!\n\033[0m" );*/
             /*goto again;*/
-        }
-        else /* Other errors */
+        } else /* Other errors */
             error_treat (ret, "modbus_receive");
     }
 
@@ -1099,23 +982,18 @@ again:
 
 int c_modbus::response_io_status (int address, int nb,
                                   uint8_t *tab_io_status,
-                                  uint8_t *response, int offset)
-{
+                                  uint8_t *response, int offset) {
     int shift = 0;
     int byte = 0;
     int i;
 
-    for (i = address; i < address + nb; i++)
-    {
+    for (i = address; i < address + nb; i++) {
         byte |= tab_io_status[i] << shift;
-        if (shift == 7)
-        {
+        if (shift == 7) {
             /* Byte is full */
             response[offset++] = byte;
             byte = shift = 0;
-        }
-        else
-        {
+        } else {
             shift++;
         }
     }
@@ -1127,8 +1005,7 @@ int c_modbus::response_io_status (int address, int nb,
 }
 
 /* Build the exception response */
-int c_modbus::response_exception (sft_t *sft, int exception_code, uint8_t *response)
-{
+int c_modbus::response_exception (sft_t *sft, int exception_code, uint8_t *response) {
     int response_length;
 
     sft->function = sft->function + 0x80;
@@ -1147,8 +1024,7 @@ int c_modbus::response_exception (sft_t *sft, int exception_code, uint8_t *respo
    accordingly.
 */
 void c_modbus::modbus_slave_manage (const uint8_t *query,
-                                    int query_length, modbus_mapping_t *mb_mapping)
-{
+                                    int query_length, modbus_mapping_t *mb_mapping) {
     int offset = TAB_HEADER_LENGTH[mb_param->type_com];
     int slave = query[offset - 1];
     int function = query[offset];
@@ -1157,11 +1033,9 @@ void c_modbus::modbus_slave_manage (const uint8_t *query,
     int resp_length = 0;
     sft_t sft;
 
-    if (slave != mb_param->slave && slave != MODBUS_BROADCAST_ADDRESS)
-    {
+    if (slave != mb_param->slave && slave != MODBUS_BROADCAST_ADDRESS) {
         // Ignores the query (not for me)
-        if (mb_param->debug)
-        {
+        if (mb_param->debug) {
             wprintf ("Request for slave %d ignored (not %d)\n",
                      slave, mb_param->slave);
         }
@@ -1170,30 +1044,22 @@ void c_modbus::modbus_slave_manage (const uint8_t *query,
 
     sft.slave = slave;
     sft.function = function;
-    if (mb_param->type_com == TCP)
-    {
+    if (mb_param->type_com == TCP) {
         sft.t_id = (query[0] << 8) + query[1];
-    }
-    else
-    {
+    } else {
         sft.t_id = 0;
         query_length -= CHECKSUM_LENGTH_RTU;
     }
 
-    switch (function)
-    {
-    case FC_READ_COIL_STATUS:
-    {
+    switch (function) {
+    case FC_READ_COIL_STATUS: {
         int nb = (query[offset + 3] << 8) + query[offset + 4];
 
-        if ( (address + nb) > mb_mapping->nb_coil_status)
-        {
+        if ( (address + nb) > mb_mapping->nb_coil_status) {
             wprintf ("Illegal data address %0X in read_coil_status\n",
                      address + nb);
             resp_length = response_exception (&sft, ILLEGAL_DATA_ADDRESS, response);
-        }
-        else
-        {
+        } else {
             resp_length = build_response_basis (&sft, response);
             response[resp_length++] = (nb / 8) + ( (nb % 8) ? 1 : 0);
             resp_length = response_io_status (address, nb,
@@ -1203,20 +1069,16 @@ void c_modbus::modbus_slave_manage (const uint8_t *query,
     }
     break;
 
-    case FC_READ_INPUT_STATUS:
-    {
+    case FC_READ_INPUT_STATUS: {
         /* Similar to coil status (but too much arguments to use a
          * function) */
         int nb = (query[offset + 3] << 8) + query[offset + 4];
 
-        if ( (address + nb) > mb_mapping->nb_input_status)
-        {
+        if ( (address + nb) > mb_mapping->nb_input_status) {
             wprintf ("Illegal data address %0X in read_input_status\n",
                      address + nb);
             resp_length = response_exception (&sft, ILLEGAL_DATA_ADDRESS, response);
-        }
-        else
-        {
+        } else {
             resp_length = build_response_basis (&sft, response);
             response[resp_length++] = (nb / 8) + ( (nb % 8) ? 1 : 0);
             resp_length = response_io_status (address, nb,
@@ -1226,24 +1088,19 @@ void c_modbus::modbus_slave_manage (const uint8_t *query,
     }
     break;
 
-    case FC_READ_HOLDING_REGISTERS:
-    {
+    case FC_READ_HOLDING_REGISTERS: {
         int nb = (query[offset + 3] << 8) + query[offset + 4];
 
-        if ( (address + nb) > mb_mapping->nb_holding_registers)
-        {
+        if ( (address + nb) > mb_mapping->nb_holding_registers) {
             wprintf ("Illegal data address %0X in read_holding_registers\n",
                      address + nb);
             resp_length = response_exception (&sft, ILLEGAL_DATA_ADDRESS, response);
-        }
-        else
-        {
+        } else {
             int i;
 
             resp_length = build_response_basis (&sft, response);
             response[resp_length++] = nb << 1;
-            for (i = address; i < address + nb; i++)
-            {
+            for (i = address; i < address + nb; i++) {
                 response[resp_length++] = mb_mapping->tab_holding_registers[i] >> 8;
                 response[resp_length++] = mb_mapping->tab_holding_registers[i] & 0xFF;
             }
@@ -1251,26 +1108,21 @@ void c_modbus::modbus_slave_manage (const uint8_t *query,
     }
     break;
 
-    case FC_READ_INPUT_REGISTERS:
-    {
+    case FC_READ_INPUT_REGISTERS: {
         /* Similar to holding registers (but too much arguments to use a
          * function) */
         int nb = (query[offset + 3] << 8) + query[offset + 4];
 
-        if ( (address + nb) > mb_mapping->nb_input_registers)
-        {
+        if ( (address + nb) > mb_mapping->nb_input_registers) {
             wprintf ("Illegal data address %0X in read_input_registers\n",
                      address + nb);
             resp_length = response_exception (&sft, ILLEGAL_DATA_ADDRESS, response);
-        }
-        else
-        {
+        } else {
             int i;
 
             resp_length = build_response_basis (&sft, response);
             response[resp_length++] = nb << 1;
-            for (i = address; i < address + nb; i++)
-            {
+            for (i = address; i < address + nb; i++) {
                 response[resp_length++] = mb_mapping->tab_input_registers[i] >> 8;
                 response[resp_length++] = mb_mapping->tab_input_registers[i] & 0xFF;
             }
@@ -1278,19 +1130,14 @@ void c_modbus::modbus_slave_manage (const uint8_t *query,
     }
     break;
 
-    case FC_FORCE_SINGLE_COIL:
-    {
-        if (address >= mb_mapping->nb_coil_status)
-        {
+    case FC_FORCE_SINGLE_COIL: {
+        if (address >= mb_mapping->nb_coil_status) {
             wprintf ("Illegal data address %0X in force_singe_coil\n", address);
             resp_length = response_exception (&sft, ILLEGAL_DATA_ADDRESS, response);
-        }
-        else
-        {
+        } else {
             int data = (query[offset + 3] << 8) + query[offset + 4];
 
-            if (data == 0xFF00 || data == 0x0)
-            {
+            if (data == 0xFF00 || data == 0x0) {
                 mb_mapping->tab_coil_status[address] = (data) ? ON : OFF;
 
                 /* In RTU mode, the CRC is computed and added
@@ -1299,9 +1146,7 @@ void c_modbus::modbus_slave_manage (const uint8_t *query,
                    possible here (FIXME). */
                 memcpy (response, query, query_length);
                 resp_length = query_length;
-            }
-            else
-            {
+            } else {
                 wprintf ("Illegal data value %0X in force_single_coil request at address %0X\n",
                          data, address);
                 resp_length = response_exception (&sft, ILLEGAL_DATA_VALUE, response);
@@ -1311,13 +1156,10 @@ void c_modbus::modbus_slave_manage (const uint8_t *query,
     break;
 
     case FC_PRESET_SINGLE_REGISTER:
-        if (address >= mb_mapping->nb_holding_registers)
-        {
+        if (address >= mb_mapping->nb_holding_registers) {
             wprintf ("Illegal data address %0X in preset_holding_register\n", address);
             resp_length = response_exception (&sft, ILLEGAL_DATA_ADDRESS, response);
-        }
-        else
-        {
+        } else {
             int data = (query[offset + 3] << 8) + query[offset + 4];
 
             mb_mapping->tab_holding_registers[address] = data;
@@ -1325,18 +1167,14 @@ void c_modbus::modbus_slave_manage (const uint8_t *query,
             resp_length = query_length;
         }
         break;
-    case FC_FORCE_MULTIPLE_COILS:
-    {
+    case FC_FORCE_MULTIPLE_COILS: {
         int nb = (query[offset + 3] << 8) + query[offset + 4];
 
-        if ( (address + nb) > mb_mapping->nb_coil_status)
-        {
+        if ( (address + nb) > mb_mapping->nb_coil_status) {
             wprintf ("Illegal data address %0X in force_multiple_coils\n",
                      address + nb);
             resp_length = response_exception (&sft, ILLEGAL_DATA_ADDRESS, response);
-        }
-        else
-        {
+        } else {
             /* 6 = byte count */
             set_bits_from_bytes (mb_mapping->tab_coil_status, address, nb, &query[offset + 6]);
 
@@ -1347,21 +1185,16 @@ void c_modbus::modbus_slave_manage (const uint8_t *query,
         }
     }
     break;
-    case FC_PRESET_MULTIPLE_REGISTERS:
-    {
+    case FC_PRESET_MULTIPLE_REGISTERS: {
         int nb = (query[offset + 3] << 8) + query[offset + 4];
 
-        if ( (address + nb) > mb_mapping->nb_holding_registers)
-        {
+        if ( (address + nb) > mb_mapping->nb_holding_registers) {
             wprintf ("Illegal data address %0X in preset_multiple_registers\n",
                      address + nb);
             resp_length = response_exception (&sft, ILLEGAL_DATA_ADDRESS, response);
-        }
-        else
-        {
+        } else {
             int i, j;
-            for (i = address, j = 6; i < address + nb; i++, j += 2)
-            {
+            for (i = address, j = 6; i < address + nb; i++, j += 2) {
                 /* 6 and 7 = first value */
                 mb_mapping->tab_holding_registers[i] =
                     (query[offset + j] << 8) + query[offset + j + 1];
@@ -1385,8 +1218,7 @@ void c_modbus::modbus_slave_manage (const uint8_t *query,
 
 /* Reads IO status */
 int c_modbus::read_io_status (int function,
-                              int start_addr, int nb, uint8_t *data_dest, int select_time)
-{
+                              int start_addr, int nb, uint8_t *data_dest, int select_time) {
     int ret;
     int query_length;
 
@@ -1396,28 +1228,24 @@ int c_modbus::read_io_status (int function,
     query_length = build_query_basis (function, start_addr, nb, query);
 
     ret = modbus_send (query, query_length);
-    if (ret > 0)
-    {
+    if (ret > 0) {
         int i, temp, bit;
         int pos = 0;
         int offset;
         int offset_end;
 
         ret = modbus_receive (query, response, UINT16, select_time);
-        if (ret < 0)
-        {
+        if (ret < 0) {
             return ret;
         }
 
         offset = TAB_HEADER_LENGTH[mb_param->type_com];
         offset_end = offset + ret;
-        for (i = offset; i < offset_end; i++)
-        {
+        for (i = offset; i < offset_end; i++) {
             /* Shift reg hi_byte to temp */
             temp = response[i + 2];
 
-            for (bit = 0x01; (bit & 0xff) && (pos < nb);)
-            {
+            for (bit = 0x01; (bit & 0xff) && (pos < nb);) {
                 data_dest[pos++] = (temp & bit) ? TRUE : FALSE;
                 bit = bit << 1;
             }
@@ -1431,12 +1259,10 @@ int c_modbus::read_io_status (int function,
 /* Reads the boolean status of coils and sets the array elements
    in the destination to TRUE or FALSE. */
 int c_modbus::read_coil_status (int start_addr,
-                                int nb, uint8_t *data_dest, int select_time)
-{
+                                int nb, uint8_t *data_dest, int select_time) {
     int status;
 
-    if (nb > MAX_STATUS)
-    {
+    if (nb > MAX_STATUS) {
         fprintf (stderr,
                  "ERROR Too many coils status requested (%d > %d)\n",
                  nb, MAX_STATUS);
@@ -1444,8 +1270,7 @@ int c_modbus::read_coil_status (int start_addr,
     }
 
     status = read_io_status (FC_READ_COIL_STATUS, start_addr, nb, data_dest, select_time);
-    if (status > 0)
-    {
+    if (status > 0) {
         status = nb;
     }
 
@@ -1454,12 +1279,10 @@ int c_modbus::read_coil_status (int start_addr,
 
 /* Same as read_coil_status but reads the slaves input table */
 int c_modbus::read_input_status (int start_addr,
-                                 int nb, uint8_t *data_dest, int select_time)
-{
+                                 int nb, uint8_t *data_dest, int select_time) {
     int status;
 
-    if (nb > MAX_STATUS)
-    {
+    if (nb > MAX_STATUS) {
         fprintf (stderr,
                  "ERROR Too many input status requested (%d > %d)\n",
                  nb, MAX_STATUS);
@@ -1469,8 +1292,7 @@ int c_modbus::read_input_status (int start_addr,
     status = read_io_status (FC_READ_INPUT_STATUS,
                              start_addr, nb, data_dest, select_time);
 
-    if (status > 0)
-    {
+    if (status > 0) {
         status = nb;
     }
 
@@ -1479,15 +1301,13 @@ int c_modbus::read_input_status (int start_addr,
 
 /* Reads the data from a modbus slave and put that data into an array */
 int c_modbus::read_registers (int function, int start_addr,
-                              int nb, uint32_t *data_dest, uint8_t data_type, int select_time)
-{
+                              int nb, uint32_t *data_dest, uint8_t data_type, int select_time) {
     int ret;
     int query_length;
     uint8_t query[MIN_QUERY_LENGTH];
     uint8_t response[MAX_MESSAGE_LENGTH * 4];
 
-    if (nb > MAX_REGISTERS)
-    {
+    if (nb > MAX_REGISTERS) {
         fprintf (stderr, "ERROR Too many holding registers requested (%d > %d)\n", nb, MAX_REGISTERS);
         return INVALID_DATA;
     }
@@ -1495,8 +1315,7 @@ int c_modbus::read_registers (int function, int start_addr,
     query_length = build_query_basis (function, start_addr, nb, query);
 
     ret = modbus_send (query, query_length);
-    if (ret > 0)
-    {
+    if (ret > 0) {
         int i;
         int offset;
 
@@ -1505,10 +1324,8 @@ int c_modbus::read_registers (int function, int start_addr,
         offset = TAB_HEADER_LENGTH[mb_param->type_com];
 
         /* If ret is negative, the loop is jumped ! */
-        for (i = 0; i < ret; i++)
-        {
-            switch (data_type)
-            {
+        for (i = 0; i < ret; i++) {
+            switch (data_type) {
             case    0:      // 数据类型为8位整数
                 data_dest[i] = (int8_t) (response[offset + 2 + i]);
             case    1:      // 数据类型为8位无符号整数
@@ -1559,12 +1376,10 @@ int c_modbus::read_registers (int function, int start_addr,
 /* Reads the holding registers in a slave and put the data into an
    array */
 int c_modbus::read_holding_registers (int start_addr, int nb,
-                                      uint32_t *data_dest, uint8_t data_type, int select_time)
-{
+                                      uint32_t *data_dest, uint8_t data_type, int select_time) {
     int status;
 
-    if (nb > MAX_REGISTERS)
-    {
+    if (nb > MAX_REGISTERS) {
         fprintf (stderr,
                  "ERROR Too many holding registers requested (%d > %d)\n",
                  nb, MAX_REGISTERS);
@@ -1578,12 +1393,10 @@ int c_modbus::read_holding_registers (int start_addr, int nb,
 /* Reads the input registers in a slave and put the data into
    an array */
 int c_modbus::read_input_registers (int start_addr, int nb,
-                                    uint16_t *data_dest, int select_time)
-{
+                                    uint16_t *data_dest, int select_time) {
     int status;
 
-    if (nb > MAX_REGISTERS)
-    {
+    if (nb > MAX_REGISTERS) {
         fprintf (stderr,
                  "ERROR Too many input registers requested (%d > %d)\n",
                  nb, MAX_REGISTERS);
@@ -1599,8 +1412,7 @@ int c_modbus::read_input_registers (int start_addr, int nb,
 /* Sends a value to a register in a slave.
    Used by force_single_coil and preset_single_register */
 int c_modbus::set_single (int function, int addr, int value,
-                          int select_time)
-{
+                          int select_time) {
     int ret;
     int query_length;
     uint8_t query[MIN_QUERY_LENGTH];
@@ -1608,8 +1420,7 @@ int c_modbus::set_single (int function, int addr, int value,
     query_length = build_query_basis (function, addr, value, query);
 
     ret = modbus_send (query, query_length);
-    if (ret > 0)
-    {
+    if (ret > 0) {
         /* Used by force_single_coil and
         * preset_single_register */
         uint8_t response[MIN_QUERY_LENGTH];
@@ -1620,13 +1431,11 @@ int c_modbus::set_single (int function, int addr, int value,
 }
 
 /* Turns ON or OFF a single coil in the slave device */
-int c_modbus::force_single_coil (int coil_addr, int state, int select_time)
-{
+int c_modbus::force_single_coil (int coil_addr, int state, int select_time) {
     int status;
 
     printf ("force_single_coil ..\n");
-    if (state)
-    {
+    if (state) {
         state = 0xFF00;
     }
 
@@ -1638,8 +1447,7 @@ int c_modbus::force_single_coil (int coil_addr, int state, int select_time)
 }
 
 /* Sets a value in one holding register in the slave device */
-int c_modbus::preset_single_register (int reg_addr, int value, int select_time)
-{
+int c_modbus::preset_single_register (int reg_addr, int value, int select_time) {
     int status;
 
     status = set_single (FC_PRESET_SINGLE_REGISTER, reg_addr, value, select_time);
@@ -1649,8 +1457,7 @@ int c_modbus::preset_single_register (int reg_addr, int value, int select_time)
 
 /* Sets/resets the coils in the slave from an array in argument */
 int c_modbus::force_multiple_coils (int start_addr, int nb,
-                                    const uint8_t *data_src, int select_time)
-{
+                                    const uint8_t *data_src, int select_time) {
     int ret;
     int i;
     int byte_count;
@@ -1660,8 +1467,7 @@ int c_modbus::force_multiple_coils (int start_addr, int nb,
 
     uint8_t query[MAX_MESSAGE_LENGTH];
 
-    if (nb > MAX_STATUS)
-    {
+    if (nb > MAX_STATUS) {
         fprintf (stderr, "ERROR Writing to too many coils (%d > %d)\n",
                  nb, MAX_STATUS);
         return INVALID_DATA;
@@ -1672,15 +1478,13 @@ int c_modbus::force_multiple_coils (int start_addr, int nb,
     byte_count = (nb / 8) + ( (nb % 8) ? 1 : 0);
     query[query_length++] = byte_count;
 
-    for (i = 0; i < byte_count; i++)
-    {
+    for (i = 0; i < byte_count; i++) {
         int bit;
 
         bit = 0x01;
         query[query_length] = 0;
 
-        while ( (bit & 0xFF) && (coil_check++ < nb))
-        {
+        while ( (bit & 0xFF) && (coil_check++ < nb)) {
             if (data_src[pos++])
                 query[query_length] |= bit;
             else
@@ -1692,8 +1496,7 @@ int c_modbus::force_multiple_coils (int start_addr, int nb,
     }
 
     ret = modbus_send (query, query_length);
-    if (ret > 0)
-    {
+    if (ret > 0) {
         uint8_t response[MAX_MESSAGE_LENGTH];
         ret = modbus_receive (query, response, UINT16, select_time);
     }
@@ -1704,8 +1507,7 @@ int c_modbus::force_multiple_coils (int start_addr, int nb,
 
 /* Copies the values in the slave from the array given in argument */
 int c_modbus::preset_multiple_registers (int start_addr, int nb,
-        const uint16_t *data_src, int select_time)
-{
+        const uint16_t *data_src, int select_time) {
     int ret;
     int i;
     int query_length;
@@ -1713,8 +1515,7 @@ int c_modbus::preset_multiple_registers (int start_addr, int nb,
 
     uint8_t query[MAX_MESSAGE_LENGTH];
 
-    if (nb > MAX_REGISTERS)
-    {
+    if (nb > MAX_REGISTERS) {
         fprintf (stderr,
                  "ERROR Trying to write to too many registers (%d > %d)\n",
                  nb, MAX_REGISTERS);
@@ -1725,15 +1526,13 @@ int c_modbus::preset_multiple_registers (int start_addr, int nb,
     byte_count = nb * 2;
     query[query_length++] = byte_count;
 
-    for (i = 0; i < nb; i++)
-    {
+    for (i = 0; i < nb; i++) {
         query[query_length++] = data_src[i] >> 8;
         query[query_length++] = data_src[i] & 0x00FF;
     }
 
     ret = modbus_send (query, query_length);
-    if (ret > 0)
-    {
+    if (ret > 0) {
         uint8_t response[MAX_MESSAGE_LENGTH];
         ret = modbus_receive (query, response, UINT16, select_time);
     }
@@ -1742,8 +1541,7 @@ int c_modbus::preset_multiple_registers (int start_addr, int nb,
 }
 
 /* Returns the slave id! */
-int c_modbus::report_slave_id (uint8_t *data_dest, int select_time)
-{
+int c_modbus::report_slave_id (uint8_t *data_dest, int select_time) {
     int ret;
     int query_length;
     uint8_t query[MIN_QUERY_LENGTH];
@@ -1754,8 +1552,7 @@ int c_modbus::report_slave_id (uint8_t *data_dest, int select_time)
     query_length -= 4;
 
     ret = modbus_send (query, query_length);
-    if (ret > 0)
-    {
+    if (ret > 0) {
         int i;
         int offset;
         int offset_end;
@@ -1786,8 +1583,7 @@ int c_modbus::report_slave_id (uint8_t *data_dest, int select_time)
 */
 void c_modbus::modbus_init_rtu (const char *device,
                                 int baud, const char *parity, int data_bit,
-                                int stop_bit, int slave)
-{
+                                int stop_bit, int slave) {
     memset (mb_param, 0, sizeof (modbus_param_t));
     strcpy (mb_param->device, device);
     mb_param->baud = baud;
@@ -1824,8 +1620,7 @@ void c_modbus::modbus_init_rtu (const char *device,
    to 1024 because it's not necessary to be root to use this port
    number.
 */
-void c_modbus::modbus_init_tcp (const char *ip, int port, int slave)
-{
+void c_modbus::modbus_init_tcp (const char *ip, int port, int slave) {
     memset (mb_param, 0, sizeof (modbus_param_t));
     strncpy (mb_param->ip, ip, sizeof (char) * 16);
     mb_param->port = port;
@@ -1851,8 +1646,7 @@ void c_modbus::modbus_init_tcp (const char *ip, int port, int slave)
 
 /* Define the slave number.
    The special value MODBUS_BROADCAST_ADDRESS can be used. */
-void c_modbus::modbus_set_slave (int slave)
-{
+void c_modbus::modbus_set_slave (int slave) {
     mb_param->slave = slave;
 }
 
@@ -1865,15 +1659,11 @@ void c_modbus::modbus_set_slave (int slave)
    With NOP_ON_ERROR, it is expected that the application will
    check for error returns and deal with them as necessary.
 */
-void c_modbus::modbus_set_error_handling (error_handling_t error_handling)
-{
+void c_modbus::modbus_set_error_handling (error_handling_t error_handling) {
     if (error_handling == FLUSH_OR_CONNECT_ON_ERROR ||
-            error_handling == NOP_ON_ERROR)
-    {
+            error_handling == NOP_ON_ERROR) {
         mb_param->error_handling = error_handling;
-    }
-    else
-    {
+    } else {
         fprintf (stderr,
                  "Invalid setting for error handling (not changed)\n");
     }
@@ -1881,13 +1671,11 @@ void c_modbus::modbus_set_error_handling (error_handling_t error_handling)
 
 
 /* Sets up a serial port for RTU communications */
-int c_modbus::modbus_connect_rtu ()
-{
+int c_modbus::modbus_connect_rtu () {
     struct termios tios;
     speed_t speed;
 
-    if (mb_param->debug)
-    {
+    if (mb_param->debug) {
         fprintf (stderr, "Opening %s at %d bauds (%s)\n", mb_param->device, mb_param->baud, mb_param->parity);
     }
 
@@ -1899,8 +1687,7 @@ int c_modbus::modbus_connect_rtu ()
        Timeouts are ignored in canonical input mode or when the
        NDELAY option is set on the file via open or fcntl */
     mb_param->fd = open (mb_param->device, O_RDWR | O_NOCTTY | O_NDELAY | O_EXCL);
-    if (mb_param->fd < 0)
-    {
+    if (mb_param->fd < 0) {
         fprintf (stderr, "ERROR Can't open the device %s (%s)\n", mb_param->device, strerror (errno));
         return -1;
     }
@@ -1913,8 +1700,7 @@ int c_modbus::modbus_connect_rtu ()
     /* C_ISPEED     Input baud (new interface)
        C_OSPEED     Output baud (new interface)
     */
-    switch (mb_param->baud)
-    {
+    switch (mb_param->baud) {
     case 110:
         speed = B110;
         break;
@@ -1954,8 +1740,7 @@ int c_modbus::modbus_connect_rtu ()
     }
 
     /* Set the baud rate */
-    if ( (cfsetispeed (&tios, speed) < 0) || (cfsetospeed (&tios, speed) < 0))
-    {
+    if ( (cfsetispeed (&tios, speed) < 0) || (cfsetospeed (&tios, speed) < 0)) {
         perror ("cfsetispeed/cfsetospeed\n");
         return -1;
     }
@@ -1971,8 +1756,7 @@ int c_modbus::modbus_connect_rtu ()
        CSIZE        Bit mask for data bits
     */
     tios.c_cflag &= ~CSIZE;
-    switch (mb_param->data_bit)
-    {
+    switch (mb_param->data_bit) {
     case 5:
         tios.c_cflag |= CS5;
         break;
@@ -1996,17 +1780,12 @@ int c_modbus::modbus_connect_rtu ()
 
     /* PARENB       Enable parity bit
        PARODD       Use odd parity instead of even */
-    if (strncmp (mb_param->parity, "none", 4) == 0)
-    {
+    if (strncmp (mb_param->parity, "none", 4) == 0) {
         tios.c_cflag &= ~ PARENB;
-    }
-    else if (strncmp (mb_param->parity, "even", 4) == 0)
-    {
+    } else if (strncmp (mb_param->parity, "even", 4) == 0) {
         tios.c_cflag |= PARENB;
         tios.c_cflag &= ~ PARODD;
-    }
-    else
-    {
+    } else {
         /* odd */
         tios.c_cflag |= PARENB;
         tios.c_cflag |= PARODD;
@@ -2069,12 +1848,9 @@ int c_modbus::modbus_connect_rtu ()
        IUCLC        Map uppercase to lowercase
        IMAXBEL      Echo BEL on input line too long
     */
-    if (strncmp (mb_param->parity, "none", 4) == 0)
-    {
+    if (strncmp (mb_param->parity, "none", 4) == 0) {
         tios.c_iflag &= ~INPCK;
-    }
-    else
-    {
+    } else {
         tios.c_iflag |= INPCK;
     }
 
@@ -2137,8 +1913,7 @@ int c_modbus::modbus_connect_rtu ()
     /*处理未接收字符*/
     tcflush (mb_param->fd, TCIFLUSH);
 
-    if (tcsetattr (mb_param->fd, TCSANOW, &tios) < 0)
-    {
+    if (tcsetattr (mb_param->fd, TCSANOW, &tios) < 0) {
         perror ("tcsetattr\n");
         return -1;
     }
@@ -2149,15 +1924,13 @@ int c_modbus::modbus_connect_rtu ()
 }
 
 /* Establishes a modbus TCP connection with a modbus slave */
-int c_modbus::modbus_connect_tcp ()
-{
+int c_modbus::modbus_connect_tcp () {
     int ret;
     int option;
     struct sockaddr_in addr;
 
     mb_param->fd = socket (PF_INET, SOCK_STREAM, 0);
-    if (mb_param->fd < 0)
-    {
+    if (mb_param->fd < 0) {
         return mb_param->fd;
     }
 
@@ -2165,8 +1938,7 @@ int c_modbus::modbus_connect_tcp ()
     /* SOL_TCP = IPPROTO_TCP */
     option = 1;
     ret = setsockopt (mb_param->fd, IPPROTO_TCP, TCP_NODELAY, (const void *) &option, sizeof (int));
-    if (ret < 0)
-    {
+    if (ret < 0) {
         perror ("setsockopt TCP_NODELAY");
         close (mb_param->fd);
         return ret;
@@ -2180,16 +1952,14 @@ int c_modbus::modbus_connect_tcp ()
     /* Set the IP low delay option */
     option = IPTOS_LOWDELAY;
     ret = setsockopt (mb_param->fd, IPPROTO_IP, IP_TOS, (const void *) &option, sizeof (int));
-    if (ret < 0)
-    {
+    if (ret < 0) {
         perror ("setsockopt IP_TOS");
         close (mb_param->fd);
         return ret;
     }
 #endif
 
-    if (mb_param->debug)
-    {
+    if (mb_param->debug) {
         wprintf ("Connecting to %s\n", mb_param->ip);
     }
 
@@ -2197,8 +1967,7 @@ int c_modbus::modbus_connect_tcp ()
     addr.sin_port = htons (mb_param->port);
     addr.sin_addr.s_addr = inet_addr (mb_param->ip);
     ret = connect (mb_param->fd, (struct sockaddr *) &addr, sizeof (struct sockaddr_in));
-    if (ret < 0)
-    {
+    if (ret < 0) {
         perror ("connect");
         close (mb_param->fd);
         return ret;
@@ -2209,8 +1978,7 @@ int c_modbus::modbus_connect_tcp ()
 
 /* Establishes a modbus connexion.
    Returns 0 on success or -1 on failure. */
-int c_modbus::modbus_connect ()
-{
+int c_modbus::modbus_connect () {
     int ret;
 
     if (mb_param->type_com == RTU)
@@ -2222,8 +1990,7 @@ int c_modbus::modbus_connect ()
 }
 
 /* Closes the file descriptor in RTU mode */
-void c_modbus::modbus_close_rtu ()
-{
+void c_modbus::modbus_close_rtu () {
     if (tcsetattr (mb_param->fd, TCSANOW, & (mb_param->old_tios)) < 0)
         perror ("tcsetattr");
 
@@ -2231,15 +1998,13 @@ void c_modbus::modbus_close_rtu ()
 }
 
 /* Closes the network connection and socket in TCP mode */
-void c_modbus::modbus_close_tcp ()
-{
+void c_modbus::modbus_close_tcp () {
     shutdown (mb_param->fd, SHUT_RDWR);
     close (mb_param->fd);
 }
 
 /* Closes a modbus connection */
-void c_modbus::modbus_close ()
-{
+void c_modbus::modbus_close () {
     if (mb_param->type_com == RTU)
         modbus_close_rtu ();
     else
@@ -2247,8 +2012,7 @@ void c_modbus::modbus_close ()
 }
 
 /* Activates the debug messages */
-void c_modbus::modbus_set_debug (int boolean)
-{
+void c_modbus::modbus_set_debug (int boolean) {
     mb_param->debug = boolean;
 
     /* Log to stderr. */
@@ -2262,8 +2026,7 @@ void c_modbus::modbus_set_debug (int boolean)
 */
 int c_modbus::modbus_mapping_new (modbus_mapping_t *mb_mapping,
                                   int nb_coil_status, int nb_input_status,
-                                  int nb_holding_registers, int nb_input_registers)
-{
+                                  int nb_holding_registers, int nb_input_registers) {
     /* 0X */
     mb_mapping->nb_coil_status = nb_coil_status;
     mb_mapping->tab_coil_status =
@@ -2279,8 +2042,7 @@ int c_modbus::modbus_mapping_new (modbus_mapping_t *mb_mapping,
         (uint8_t *) malloc (nb_input_status * sizeof (uint8_t));
     memset (mb_mapping->tab_input_status, 0,
             nb_input_status * sizeof (uint8_t));
-    if (mb_mapping->tab_input_status == NULL)
-    {
+    if (mb_mapping->tab_input_status == NULL) {
         free (mb_mapping->tab_coil_status);
         return -1;
     }
@@ -2291,8 +2053,7 @@ int c_modbus::modbus_mapping_new (modbus_mapping_t *mb_mapping,
         (uint16_t *) malloc (nb_holding_registers * sizeof (uint16_t));
     memset (mb_mapping->tab_holding_registers, 0,
             nb_holding_registers * sizeof (uint16_t));
-    if (mb_mapping->tab_holding_registers == NULL)
-    {
+    if (mb_mapping->tab_holding_registers == NULL) {
         free (mb_mapping->tab_coil_status);
         free (mb_mapping->tab_input_status);
         return -1;
@@ -2304,8 +2065,7 @@ int c_modbus::modbus_mapping_new (modbus_mapping_t *mb_mapping,
         (uint16_t *) malloc (nb_input_registers * sizeof (uint16_t));
     memset (mb_mapping->tab_input_registers, 0,
             nb_input_registers * sizeof (uint16_t));
-    if (mb_mapping->tab_input_registers == NULL)
-    {
+    if (mb_mapping->tab_input_registers == NULL) {
         free (mb_mapping->tab_coil_status);
         free (mb_mapping->tab_input_status);
         free (mb_mapping->tab_holding_registers);
@@ -2316,8 +2076,7 @@ int c_modbus::modbus_mapping_new (modbus_mapping_t *mb_mapping,
 }
 
 /* Frees the 4 arrays */
-void c_modbus::modbus_mapping_free (modbus_mapping_t *mb_mapping)
-{
+void c_modbus::modbus_mapping_free (modbus_mapping_t *mb_mapping) {
     free (mb_mapping->tab_coil_status);
     free (mb_mapping->tab_input_status);
     free (mb_mapping->tab_holding_registers);
@@ -2325,22 +2084,19 @@ void c_modbus::modbus_mapping_free (modbus_mapping_t *mb_mapping)
 }
 
 /* Listens for any query from one or many modbus masters in TCP */
-int c_modbus::modbus_slave_listen_tcp (int nb_connection)
-{
+int c_modbus::modbus_slave_listen_tcp (int nb_connection) {
     int new_socket;
     int yes;
     struct sockaddr_in addr;
 
     new_socket = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (new_socket < 0)
-    {
+    if (new_socket < 0) {
         perror ("socket");
         return -1;
     }
 
     yes = 1;
-    if (setsockopt (new_socket, SOL_SOCKET, SO_REUSEADDR, (char *) &yes, sizeof (yes)) < 0)
-    {
+    if (setsockopt (new_socket, SOL_SOCKET, SO_REUSEADDR, (char *) &yes, sizeof (yes)) < 0) {
         perror ("setsockopt");
         close (new_socket);
         return -1;
@@ -2351,15 +2107,13 @@ int c_modbus::modbus_slave_listen_tcp (int nb_connection)
     /* If the modbus port is < to 1024, we need the setuid root. */
     addr.sin_port = htons (mb_param->port);
     addr.sin_addr.s_addr = INADDR_ANY;
-    if (bind (new_socket, (struct sockaddr *) &addr, sizeof (addr)) < 0)
-    {
+    if (bind (new_socket, (struct sockaddr *) &addr, sizeof (addr)) < 0) {
         perror ("bind");
         close (new_socket);
         return -1;
     }
 
-    if (listen (new_socket, nb_connection) < 0)
-    {
+    if (listen (new_socket, nb_connection) < 0) {
         perror ("listen");
         close (new_socket);
         return -1;
@@ -2368,8 +2122,7 @@ int c_modbus::modbus_slave_listen_tcp (int nb_connection)
     return new_socket;
 }
 
-int c_modbus::modbus_slave_accept_tcp (int *socket)
-{
+int c_modbus::modbus_slave_accept_tcp (int *socket) {
     struct sockaddr_in addr;
     socklen_t addrlen;
 
@@ -2390,22 +2143,16 @@ again:
     */
 
     /* changeed by wcx */
-    if (mb_param->fd < 0)
-    {
-        if ( (errno == ECONNABORTED) || (errno == EINTR))
-        {
+    if (mb_param->fd < 0) {
+        if ( (errno == ECONNABORTED) || (errno == EINTR)) {
             wprintf ("Listen Again ...\n");
             goto again;
-        }
-        else
-        {
+        } else {
             perror ("accept");
             close (*socket);
             *socket = 0;
         }
-    }
-    else
-    {
+    } else {
         wprintf ("The client %s is connected\n", inet_ntoa (addr.sin_addr));
     }
 
@@ -2413,8 +2160,7 @@ again:
 }
 
 /* Closes a TCP socket */
-void c_modbus::modbus_slave_close_tcp (int socket)
-{
+void c_modbus::modbus_slave_close_tcp (int socket) {
     shutdown (socket, SHUT_RDWR);
     close (socket);
 }
@@ -2423,12 +2169,10 @@ void c_modbus::modbus_slave_close_tcp (int socket)
 
 /* Sets many input/coil status from a single byte value (all 8 bits of
    the byte value are set) */
-void c_modbus::set_bits_from_byte (uint8_t *dest, int address, const uint8_t value)
-{
+void c_modbus::set_bits_from_byte (uint8_t *dest, int address, const uint8_t value) {
     int i;
 
-    for (i = 0; i < 8; i++)
-    {
+    for (i = 0; i < 8; i++) {
         dest[address + i] = (value & (1 << i)) ? ON : OFF;
     }
 }
@@ -2436,13 +2180,11 @@ void c_modbus::set_bits_from_byte (uint8_t *dest, int address, const uint8_t val
 /* Sets many input/coil status from a table of bytes (only the bits
    between address and address + nb_bits are set) */
 void c_modbus::set_bits_from_bytes (uint8_t *dest, int address, int nb_bits,
-                                    const uint8_t tab_byte[])
-{
+                                    const uint8_t tab_byte[]) {
     int i;
     int shift = 0;
 
-    for (i = address; i < address + nb_bits; i++)
-    {
+    for (i = address; i < address + nb_bits; i++) {
         dest[i] = tab_byte[ (i - address) / 8] & (1 << shift) ? ON : OFF;
         /* gcc doesn't like: shift = (++shift) % 8; */
         shift++;
@@ -2452,19 +2194,16 @@ void c_modbus::set_bits_from_bytes (uint8_t *dest, int address, int nb_bits,
 
 /* Gets the byte value from many input/coil status.
    To obtain a full byte, set nb_bits to 8. */
-uint8_t c_modbus::get_byte_from_bits (const uint8_t *src, int address, int nb_bits)
-{
+uint8_t c_modbus::get_byte_from_bits (const uint8_t *src, int address, int nb_bits) {
     int i;
     uint8_t value = 0;
 
-    if (nb_bits > 8)
-    {
+    if (nb_bits > 8) {
         fprintf (stderr, "ERROR nb_bits is too big\n");
         nb_bits = 8;
     }
 
-    for (i = 0; i < nb_bits; i++)
-    {
+    for (i = 0; i < nb_bits; i++) {
         value |= (src[address + i] << i);
     }
 
@@ -2472,8 +2211,7 @@ uint8_t c_modbus::get_byte_from_bits (const uint8_t *src, int address, int nb_bi
 }
 
 /* Read a float from 4 bytes in Modbus format */
-float c_modbus::modbus_read_float (const uint16_t *src)
-{
+float c_modbus::modbus_read_float (const uint16_t *src) {
     float r = 0.0f;
     uint32_t i;
 
@@ -2484,8 +2222,7 @@ float c_modbus::modbus_read_float (const uint16_t *src)
 }
 
 /* Write a float to 4 bytes in Modbus format */
-void c_modbus::modbus_write_float (float real, uint16_t *dest)
-{
+void c_modbus::modbus_write_float (float real, uint16_t *dest) {
     uint32_t i = 0;
 
     memcpy (&i, &real, sizeof (i));

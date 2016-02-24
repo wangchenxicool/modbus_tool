@@ -19,8 +19,7 @@ static int STEP_MODE = 0;
 static int COUNTS = 1;
 static int WAIT_TIME = 0;
 
-void print_usage (const char *prog)
-{
+void print_usage (const char *prog) {
     printf ("\nUsage: <%s serial_node  data1,data2,..., -scnh>\n\n", prog);
     puts ("  -s: modbus space time‰\n"
           "  -c: step run–\n"
@@ -30,8 +29,7 @@ void print_usage (const char *prog)
     exit (1);
 }
 
-void parse_opts (int argc, char *argv[])
-{
+void parse_opts (int argc, char *argv[]) {
     int ret, ch;
     opterr = 0;
     char key_value[128];
@@ -40,10 +38,8 @@ void parse_opts (int argc, char *argv[])
     STEP_MODE = 0;
     COUNTS = 1;
 
-    while ( (ch = getopt (argc, argv, "w:s:cn:h")) != EOF)
-    {
-        switch (ch)
-        {
+    while ( (ch = getopt (argc, argv, "w:s:cn:h")) != EOF) {
+        switch (ch) {
         case 's':
             SPACE_TIME = atoi (optarg);
             break;
@@ -64,22 +60,19 @@ void parse_opts (int argc, char *argv[])
     }
 }
 
-int main (int argc, char *argv[])
-{
+int main (int argc, char *argv[]) {
     int i, ret;
     uint8_t *tab_registers;
 
-    if (argc < 3)
-    {
+    if (argc < 3) {
         print_usage (argv[0]);
     }
-    
+
     c_modbus modbus (argv[1], 9600, "none", 8, 1, SLAVE);
     modbus.modbus_set_debug (TRUE);
 
     /* RTU parity : none, even, odd */
-    if (modbus.modbus_connect () == -1)
-    {
+    if (modbus.modbus_connect () == -1) {
         perror ("[modbus_connect]");
         exit (1);
     }
@@ -95,11 +88,9 @@ int main (int argc, char *argv[])
     const char *lps = NULL, *lpe = NULL;
     lpe = lps = argv[2];
     i = 0;
-    while (lps)
-    {
+    while (lps) {
         lps = strchr (lps, ',');
-        if (lps)
-        {
+        if (lps) {
             memset (value, 0, sizeof (value));
             strncpy (value, lpe, lps - lpe);
             query[i++] = (unsigned char) strtol (value, NULL, 16);
@@ -111,20 +102,17 @@ int main (int argc, char *argv[])
 
     parse_opts (argc, argv);
 
-    for (i = 0; i < COUNTS; i++)
-    {
+    for (i = 0; i < COUNTS; i++) {
         printf ("--------------------------------------\n");
         modbus.modbus_send (query, query_length);
         //modbus.serial_send (query, query_length);
         int ret = modbus.rcv_msg (tab_registers, 5000, WAIT_TIME);
-        if (ret < 0)
-        {
+        if (ret < 0) {
             printf ("rcv err!\n");
         }
         printf ("\n");
         modbus.modbus_sleep (0, SPACE_TIME * 1000);
-        if (STEP_MODE == 1)
-        {
+        if (STEP_MODE == 1) {
             printf ("push enter key to continue...\n");
             getchar ();
         }
